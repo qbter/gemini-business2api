@@ -13,8 +13,9 @@ NO_PROXY 格式:
 """
 
 import re
-from typing import Tuple
+from typing import Tuple, Callable, Any, Optional
 from urllib.parse import urlparse
+import functools
 
 
 def parse_proxy_setting(proxy_str: str) -> Tuple[str, str]:
@@ -166,3 +167,56 @@ def normalize_proxy_url(proxy_str: str) -> str:
 
     # 无法识别的格式，尝试添加 http:// 前缀
     return f"http://{proxy_str}"
+
+
+def request_with_proxy_fallback(request_func: Callable, *args, **kwargs) -> Any:
+    """
+    带代理失败回退的请求包装器
+
+    如果代理连接失败，自动禁用代理重试一次
+
+    Args:
+        request_func: 原始请求函数
+        *args, **kwargs: 传递给请求函数的参数
+
+    Returns:
+        请求响应对象
+
+    Raises:
+        原始异常（如果直连也失败）
+    """
+    # 代理相关的错误类型
+    PROXY_ERRORS = (
+        "ProxyError",
+        "ConnectTimeout",
+        "ConnectionError",
+        "407",  # Proxy Authentication Required
+        "502",  # Bad Gateway (代理问题)
+        "503",  # Service Unavailable (代理问题)
+    )
+
+    try:
+        # 首次尝试（使用代理）
+        return request_func(*args, **kwargs)
+    except Exception as e:
+        error_str = str(e)
+        error_type = type(e).__name__
+
+        # 检查是否是代理相关错误
+        is_proxy_error = any(err in error_str or err in error_type for err in PROXY_ERRORS)
+
+        if is_proxy_error and "proxies" in kwargs:
+            # 禁用代理重试
+            original_proxies = kwargs.get("proxies")
+            kwargs["proxies"] = None
+
+            try:
+                # 直连重试
+                return request_func(*args, **kwargs)
+            except Exception:
+                # 直连也失败，恢复原始代理设置并抛出原始异常
+                kwargs["proxies"] = original_proxies
+                raise e
+        else:
+            # 不是代理错误，直接抛出
+            raise

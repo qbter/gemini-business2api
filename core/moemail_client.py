@@ -16,6 +16,7 @@ from typing import Optional
 import requests
 
 from core.mail_utils import extract_verification_code
+from core.proxy_utils import request_with_proxy_fallback
 
 
 class MoemailClient:
@@ -63,7 +64,8 @@ class MoemailClient:
             self._log("info", f"[HTTP] Request body: {kwargs['json']}")
 
         try:
-            res = requests.request(
+            res = request_with_proxy_fallback(
+                requests.request,
                 method,
                 url,
                 proxies=self.proxies,

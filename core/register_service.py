@@ -199,14 +199,29 @@ class RegisterService(BaseTaskService[RegisterTask]):
         config_data = result["config"]
         config_data["mail_provider"] = temp_mail_provider
         config_data["mail_address"] = client.email
+
+        # 保存邮箱自定义配置
         if temp_mail_provider == "freemail":
             config_data["mail_password"] = ""
             config_data["mail_base_url"] = config.basic.freemail_base_url
+            config_data["mail_jwt_token"] = config.basic.freemail_jwt_token
+            config_data["mail_verify_ssl"] = config.basic.freemail_verify_ssl
+            config_data["mail_domain"] = config.basic.freemail_domain
         elif temp_mail_provider == "gptmail":
             config_data["mail_password"] = ""
             config_data["mail_base_url"] = config.basic.gptmail_base_url
+            config_data["mail_api_key"] = config.basic.gptmail_api_key
+            config_data["mail_verify_ssl"] = config.basic.gptmail_verify_ssl
+            config_data["mail_domain"] = config.basic.gptmail_domain
         elif temp_mail_provider == "moemail":
             config_data["mail_password"] = getattr(client, "email_id", "") or getattr(client, "password", "")
+            config_data["mail_base_url"] = config.basic.moemail_base_url
+            config_data["mail_api_key"] = config.basic.moemail_api_key
+            config_data["mail_domain"] = config.basic.moemail_domain
+        elif temp_mail_provider == "duckmail":
+            config_data["mail_password"] = getattr(client, "password", "")
+            config_data["mail_base_url"] = config.basic.duckmail_base_url
+            config_data["mail_api_key"] = config.basic.duckmail_api_key
         else:
             config_data["mail_password"] = getattr(client, "password", "")
 

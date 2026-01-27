@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 import requests
 
 from core.mail_utils import extract_verification_code
+from core.proxy_utils import request_with_proxy_fallback
 
 
 class GPTMailClient:
@@ -55,7 +56,8 @@ class GPTMailClient:
 
         proxies = {"http": self.proxy_url, "https": self.proxy_url} if self.proxy_url else None
 
-        res = requests.request(
+        res = request_with_proxy_fallback(
+            requests.request,
             method,
             url,
             proxies=proxies,

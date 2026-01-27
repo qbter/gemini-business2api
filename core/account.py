@@ -61,6 +61,12 @@ class AccountConfig:
     mail_client_id: Optional[str] = None
     mail_refresh_token: Optional[str] = None
     mail_tenant: Optional[str] = None
+    # 邮箱自定义配置字段（用于账户级别的邮箱服务配置）
+    mail_base_url: Optional[str] = None
+    mail_jwt_token: Optional[str] = None
+    mail_verify_ssl: Optional[bool] = None
+    mail_domain: Optional[str] = None
+    mail_api_key: Optional[str] = None
 
     def get_remaining_hours(self) -> Optional[float]:
         """计算账户剩余小时数"""

@@ -6,6 +6,7 @@ from typing import Optional
 import requests
 
 from core.mail_utils import extract_verification_code
+from core.proxy_utils import request_with_proxy_fallback
 
 
 class FreemailClient:
@@ -38,7 +39,8 @@ class FreemailClient:
             self._log("info", f"[HTTP] Params: {kwargs['params']}")
 
         try:
-            res = requests.request(
+            res = request_with_proxy_fallback(
+                requests.request,
                 method,
                 url,
                 proxies=self.proxies,

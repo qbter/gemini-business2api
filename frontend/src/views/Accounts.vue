@@ -1349,6 +1349,27 @@ const parseImportLines = (raw: string) => {
         return
       }
       const email = parts[1]
+
+      // 完整格式：freemail----email----base_url----jwt_token----verify_ssl----domain
+      if (parts.length >= 6) {
+        items.push({
+          id: email,
+          secure_c_ses: '',
+          csesidx: '',
+          config_id: '',
+          expires_at: IMPORT_EXPIRES_AT,
+          mail_provider: 'freemail',
+          mail_address: email,
+          mail_password: '',
+          mail_base_url: parts[2] || undefined,
+          mail_jwt_token: parts[3] || undefined,
+          mail_verify_ssl: parts[4] === 'true' || parts[4] === '1',
+          mail_domain: parts[5] || undefined,
+        })
+        return
+      }
+
+      // 简化格式：freemail----email
       items.push({
         id: email,
         secure_c_ses: '',
